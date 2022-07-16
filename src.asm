@@ -1,23 +1,19 @@
     processor 6502
 
+    include "vcs.h"
+    include "macro.h"
+
     seg code
     org $F000
 
-Start:
-    sei
-    cld
-    ldx #$FF
-    txs
+START:
+    CLEAN_START
 
-    lda #0
-    ldx #$FF
-    sta $FF
+    lda #$1E
+    sta COLUBK
 
-MemLoop:
-    dex
-    sta $0,X
-    bne MemLoop
+    jmp START
 
     org $FFFC
-    .word Start
-    .word Start
+    .word START
+    .word START
