@@ -6,14 +6,41 @@
     seg code
     org $F000
 
-START:
+Start:
     CLEAN_START
 
-    lda #$1E
-    sta COLUBK
+StartFrame:
+    lda #2
+    sta VBLANK
+    sta VSYNC
+    sta WSYNC
+    sta WSYNC
+    sta WSYNC
+    lda #0
+    sta VSYNC
 
-    jmp START
+    ldx #37
+LoopVBlank:
+    sta WSYNC
+    dex
+    bne LoopVBlank
+    lda #0
+    sta VBLANK
+
+    ldx #192
+LoopVisible:
+    stx COLUBK
+    sta WSYNC
+    dex
+    bne LoopVisible
+
+    lda #2
+LoopOverscan:
+    sta WSYNC
+    dex
+    bne LoopOverscan
+    jmp StartFrame
 
     org $FFFC
-    .word START
-    .word START
+    .word Start
+    .word Start
