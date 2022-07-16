@@ -6,41 +6,83 @@
     seg code
     org $F000
 
-Start:
+Reset:
     CLEAN_START
+    ldx #$80
+    stx COLUBK
+    lda #$1C
+    sta COLUPF
 
 StartFrame:
-    lda #2
+    lda #02
     sta VBLANK
     sta VSYNC
-    sta WSYNC
-    sta WSYNC
-    sta WSYNC
+    REPEAT 3
+        sta WSYNC
+    REPEND
     lda #0
     sta VSYNC
-
-    ldx #37
-LoopVBlank:
-    sta WSYNC
-    dex
-    bne LoopVBlank
+    REPEAT 37
+        sta WSYNC
+    REPEND
     lda #0
     sta VBLANK
 
-    ldx #192
-LoopVisible:
-    stx COLUBK
-    sta WSYNC
-    dex
-    bne LoopVisible
+    ldx #%00000001
+    stx CTRLPF
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ldx #0
+    stx PF0
+    stx PF1
+    stx PF2
+    REPEAT 7
+        sta WSYNC
+    REPEND
 
+    ldx #%11100000
+    stx PF0
+    ldx #%11111111
+    stx PF1
+    stx PF2
+    REPEAT 7
+        sta WSYNC
+    REPEND
+
+    ldx #%00100000
+    stx PF0
+    ldx #0
+    stx PF1
+    stx PF2
+    REPEAT 164
+        sta WSYNC
+    REPEND
+
+    ldx #%11100000
+    stx PF0
+    ldx #%11111111
+    stx PF1
+    stx PF2
+    REPEAT 7
+        sta WSYNC
+    REPEND
+
+    ldx #0
+    stx PF0
+    stx PF1
+    stx PF2
+    REPEAT 7
+        sta WSYNC
+    REPEND
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     lda #2
-LoopOverscan:
-    sta WSYNC
-    dex
-    bne LoopOverscan
+    sta VBLANK
+    REPEAT 30
+        sta WSYNC
+    REPEND
+
     jmp StartFrame
 
     org $FFFC
-    .word Start
-    .word Start
+    .word Reset
+    .word Reset
