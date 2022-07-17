@@ -1,34 +1,24 @@
     processor 6502
-
     include "vcs.h"
     include "macro.h"
-
     seg.u Variables
     org $80
-P0Height .byte
-P1Height .byte
-
-    seg code
+P0Height byte
+PlayerYPos byte
+    seg Code
     org $F000
 
 Reset:
     CLEAN_START
-    ldx #$80
+    ldx #$00
     stx COLUBK
-    lda #$1C
-    sta COLUPF
-    lda #10
+    lda #180
+    sta PlayerYPos
+    lda #9
     sta P0Height
-    sta P1Height
-    lda #$48
-    sta COLUP0
-    lda #$C6
-    sta COLUP1
-    ldy #%00000010
-    sty CTRLPF
 
 StartFrame:
-    lda #02
+    lda #2
     sta VBLANK
     sta VSYNC
     REPEAT 3
@@ -41,80 +31,60 @@ StartFrame:
     REPEND
     lda #0
     sta VBLANK
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-VisibleScanlines:
-    REPEAT 10
-        sta WSYNC
-    REPEND
-    ldy #0
-ScoreboardLoop:
-    lda NumberBitmap,Y
-    sta PF1
-    sta WSYNC
-    iny
-    cpy #10
-    bne ScoreboardLoop
-    lda #0
-    sta PF1
-    REPEAT 50
-        sta WSYNC
-    REPEND
-    ldy #0
-Player0Loop:
-    lda PlayerBitmap,Y
-    sta GRP0
-    sta WSYNC
-    iny
-    cpy P0Height
-    bne Player0Loop
-    lda #0
-    sta GRP0
-    ldy #0
-Player1Loop:
-    lda PlayerBitmap,Y
-    sta GRP1
-    sta WSYNC
-    iny
-    cpy P1Height
-    bne Player1Loop
-    lda #0
-    sta GRP1
-    REPEAT 102
-        sta WSYNC
-    REPEND
+;;;;;;;;;;;;;;;;;;;;;;;
+    ldx #192
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Scanline:
+    txa
+    sec
+    sbc PlayerYPos
+    cmp P0Height
+    bcc LoadBitmap
+    lda #0
+
+LoadBitmap:
+    tay
+    lda P0Bitmap,Y
+    sta WSYNC
+    sta GRP0
+    lda P0Color,Y
+    sta COLUP0
+    dex
+    bne Scanline
+
+Overscan:
+    lda #2
+    sta VBLANK
     REPEAT 30
         sta WSYNC
     REPEND
 
+    dec PlayerYPos
+
     jmp StartFrame
 
-    org $FFE8
-PlayerBitmap:
-    .byte #%01111110
-    .byte #%11111111
-    .byte #%10011001
-    .byte #%11111111
-    .byte #%11111111
-    .byte #%11111111
-    .byte #%10111101
-    .byte #%11000011
-    .byte #%11111111
-    .byte #%01111110
-    org $FFF2
-NumberBitmap:
-    .byte #%00001110
-    .byte #%00001110
-    .byte #%00000010
-    .byte #%00000010
-    .byte #%00001110
-    .byte #%00001110
-    .byte #%00001000
-    .byte #%00001000
-    .byte #%00001110
-    .byte #%00001110
+P0Bitmap:
+    byte #%00000000
+    byte #%00101000
+    byte #%01110100
+    byte #%11111010
+    byte #%11111010
+    byte #%11111010
+    byte #%11111110
+    byte #%01101100
+    byte #%00110000
+
+P0Color:
+    byte #$00
+    byte #$40
+    byte #$40
+    byte #$40
+    byte #$40
+    byte #$42
+    byte #$42
+    byte #$44
+    byte #$D2
 
     org $FFFC
-    .word Reset
-    .word Reset
+    word Reset
+    word Reset
