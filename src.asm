@@ -73,7 +73,15 @@ Overscan:
         sta WSYNC
     REPEND
 
-    inc P0XPos
+    lda P0XPos
+    cmp #80
+    bpl ResetXPos
+    jmp IncrmXPos
+ResetXPos:
+    lda #40
+    sta P0XPos
+IncrmXPos:
+    INC P0XPos
 
     jmp StartFrame
 
