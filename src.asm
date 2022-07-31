@@ -3,17 +3,20 @@
     include "macro.h"
     seg.u Variables
     org $80
-P0XPos byte
 
+JetXPos byte
+JetYPos byte
+BomberXPos byte
+BomberYPos byte
     seg Code
     org $F000
 
 Reset:
     CLEAN_START
-    ldx #$00
-    stx COLUBK
-    lda #50
-    sta P0XPos
+    lda #10
+    sta JetYPos
+    lda #60
+    sta JetXPos
 
 StartFrame:
     lda #2
@@ -24,88 +27,40 @@ StartFrame:
     REPEND
     lda #0
     sta VSYNC
-    lda P0XPos
-    and #$7F
-    sec
-    sta WSYNC
-    sta HMCLR
-
-DivideLoop:
-    sbc #15
-    bcs DivideLoop
-    eor #7
-    asl
-    asl
-    asl
-    asl
-    sta HMP0
-    sta RESP0
-    sta WSYNC
-    sta HMOVE
     REPEAT 37
         sta WSYNC
     REPEND
-
-    lda #0
     sta VBLANK
-    REPEAT 60
-        sta WSYNC
-    REPEND
-    ldy 8
-DrawBitmap:
-    lda P0Bitmap,Y
-    sta GRP0
-    lda P0Color,Y
-    sta COLUP0
-    sta WSYNC
-    dey
-    bne DrawBitmap
-    lda #0
-    sta GRP0
-    REPEAT 124
-        sta WSYNC
-    REPEND
 
-Overscan:
+GameVisibleLine:
+    lda #$84
+    sta COLUBK
+    lda #$C2
+    sta COLUPF
+    lda #%00000001
+    sta CTRLPF
+    lda #$F0
+    sta PF0
+    lda #$FC
+    sta PF1
+    lda #0
+    sta PF2
+
+    ldx #192
+.GameLineLoop:
+    sta WSYNC
+    dex
+    bne .GameLineLoop
+
     lda #2
     sta VBLANK
     REPEAT 30
         sta WSYNC
     REPEND
-
-    lda P0XPos
-    cmp #80
-    bpl ResetXPos
-    jmp IncrmXPos
-ResetXPos:
-    lda #40
-    sta P0XPos
-IncrmXPos:
-    INC P0XPos
+    lda #0
+    sta VBLANK
 
     jmp StartFrame
-
-P0Bitmap:
-    byte #%00000000
-    byte #%00010000
-    byte #%00001000
-    byte #%00011100
-    byte #%00110110
-    byte #%00101110
-    byte #%00101110
-    byte #%00111110
-    byte #%00011100
-
-P0Color:
-    byte #$00
-    byte #$02
-    byte #$02
-    byte #$52
-    byte #$52
-    byte #$52
-    byte #$52
-    byte #$52
-    byte #$52
 
     org $FFFC
     word Reset
