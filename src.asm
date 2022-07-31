@@ -4,16 +4,16 @@
     seg.u Variables
     org $80
 
-JetXPos byte
-JetYPos byte
-BomberXPos byte
-BomberYPos byte
-JetSpritePtr word
-JetColorPtr word
+JetXPos         byte
+JetYPos         byte
+BomberXPos      byte
+BomberYPos      byte
+JetSpritePtr    word
+JetColorPtr     word
 BomberSpritePtr word
-BomberColorPtr word
-JetAnimOffset byte
-Random byte
+BomberColorPtr  word
+JetAnimOffset   byte
+Random          byte
 
     seg Code
     org $FF00
