@@ -10,6 +10,8 @@ JetSprite:
     .byte #%00001000
     .byte #%00001000
 
+JET_HEIGHT = . - JetSprite
+
 JetSpriteTurn:
     .byte #%00000000
     .byte #%00001000
@@ -31,6 +33,8 @@ BomberSprite:
     .byte #%00101010
     .byte #%00001000
     .byte #%00011100
+
+BOMBER_HEIGHT = . - BomberSprite
 
 JetColor:
     .byte #$00
