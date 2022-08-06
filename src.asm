@@ -8,12 +8,19 @@ JetXPos         byte
 JetYPos         byte
 BomberXPos      byte
 BomberYPos      byte
+Score           byte
+Timer           byte
+Temp            byte
+OnesDigitOffset byte
+TensDigitOffset byte
 JetSpritePtr    word
 JetColorPtr     word
 BomberSpritePtr word
 BomberColorPtr  word
 JetAnimOffset   byte
 Random          byte
+ScoreSprite     byte
+TimerSprite     byte
 
     seg Code
     org $FF00
@@ -53,14 +60,6 @@ Reset:
     sta BomberColorPtr+1
 
 StartFrame:
-    lda JetXPos
-    ldy #0
-    jsr SetObjectXPos
-    lda BomberXPos
-    ldy #1
-    jsr SetObjectXPos
-    sta WSYNC
-    sta HMOVE
 
     lda #2
     sta VBLANK
@@ -70,22 +69,68 @@ StartFrame:
     REPEND
     lda #0
     sta VSYNC
-    REPEAT 37
+    REPEAT 33
         sta WSYNC
     REPEND
+
+    lda JetXPos
+    ldy #0
+    jsr SetObjectXPos
+    lda BomberXPos
+    ldy #1
+    jsr SetObjectXPos
+    jsr CalculateDigitOffset
+    sta WSYNC
+    sta HMOVE
+    lda #0
     sta VBLANK
 
     lda #0
     sta PF0
     sta PF1
     sta PF2
-    sta PF2
     sta GRP0
     sta GRP1
     sta COLUPF
-    REPEAT 20
-        sta WSYNC
-    REPEND
+    ldx #DIGITS_HEIGHT
+
+.ScoreDigitLoop:
+    ldy TensDigitOffset
+    lda Digits,Y
+    and #$F0
+    sta ScoreSprite
+
+    ldy OnesDigitOffset
+    lda Digits,Y
+    and #$0F
+    ora ScoreSprite
+    sta ScoreSprite
+    sta WSYNC
+    sta PF1
+
+    ldy TensDigitOffset+1
+    lda Digits,Y
+    and #$F0
+    sta TimerSprite
+
+    ldy OnesDigitOffset+1
+    lda Digits,Y
+    and #$F0
+    sta TimerSprite
+
+    ldy OnesDigitOffset+1
+    lda Digits,Y
+    and #$0F
+    ora TimerSprite
+    sta TimerSprite
+
+    jsr Sleep12Cycles
+
+    dex
+    sta PF1
+    bne .ScoreDigitLoop
+
+    sta WSYNC
 
 GameVisibleLine:
     lda #$84
@@ -258,6 +303,31 @@ GetRandomBomberPos subroutine
     sta BomberYPos
     rts
 
+CalculateDigitOffset subroutine
+    ldx #1
+.PrepareScoreLoop
+    lda Score,X
+    and #$0F
+    sta Temp
+    asl
+    asl
+    adc Temp
+    sta OnesDigitOffset,X
+    lda Score,x
+    and #$F0
+    lsr
+    lsr
+    sta Temp
+    lsr
+    lsr
+    adc Temp
+    sta TensDigitOffset,X
+    dex
+    bpl .PrepareScoreLoop
+    rts
+
+Sleep12Cycles subroutine
+    rts
 
     org $FFFC
     word Reset
