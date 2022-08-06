@@ -75,6 +75,18 @@ StartFrame:
     REPEND
     sta VBLANK
 
+    lda #0
+    sta PF0
+    sta PF1
+    sta PF2
+    sta PF2
+    sta GRP0
+    sta GRP1
+    sta COLUPF
+    REPEAT 20
+        sta WSYNC
+    REPEND
+
 GameVisibleLine:
     lda #$84
     sta COLUBK
@@ -89,7 +101,7 @@ GameVisibleLine:
     lda #0
     sta PF2
 
-    ldx #96
+    ldx #84
 .GameLineLoop:
 .AreWeInsideJetSprite:
     txa
@@ -183,6 +195,25 @@ UpdateBomberPosition:
 
 EndPositionUpdate:
 
+CheckCollisionP0P1:
+    lda #%10000000
+    bit CXPPMM
+    bne .CollisionPOP1
+    jmp CheckCollisionP0PF
+.CollisionPOP1:
+    jsr GameOver
+
+CheckCollisionP0PF:
+    lda #%10000000
+    bit CXP0FB
+    bne .CollisionP0PF
+    jmp EndCollisionCheck
+.CollisionP0PF:
+    jsr GameOver
+
+EndCollisionCheck:
+    sta CXCLR
+
     jmp StartFrame
 
 SetObjectXPos subroutine
@@ -198,6 +229,11 @@ SetObjectXPos subroutine
     asl
     sta HMP0,Y
     STA RESP0,Y
+    rts
+
+GameOver subroutine
+    lda #$30
+    sta COLUBK
     rts
 
 GetRandomBomberPos subroutine
