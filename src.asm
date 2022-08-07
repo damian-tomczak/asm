@@ -40,9 +40,8 @@ Reset:
     sta BomberYPos
     lda #%11010100
     sta Random
-    lda #4
+    lda #0
     sta Score
-    lda #8
     sta Timer
 
     lda #<JetSprite
@@ -225,6 +224,9 @@ CheckP0Up:
     lda #%00010000
     bit SWCHA
     bne CheckP0Down
+    lda JetYPos
+    cmp #70
+    bpl CheckP0Down
     inc JetYPos
     lda #0
     sta JetAnimOffset
@@ -232,6 +234,9 @@ CheckP0Down:
     lda #%00100000
     bit SWCHA
     bne CheckP0Left
+    lda JetYPos
+    cmp #5
+    bmi CheckP0Left
     dec JetYPos
     lda #0
     sta JetAnimOffset
@@ -239,6 +244,9 @@ CheckP0Left:
     lda #%01000000
     bit SWCHA
     bne CheckP0Right
+    lda JetXPos
+    cmp #35
+    bmi CheckP0Right
     dec JetXPos
     lda JET_HEIGHT
     sta JetAnimOffset
@@ -246,6 +254,9 @@ CheckP0Right
     lda #%10000000
     bit SWCHA
     bne EndInputCheck
+    lda JetXPos
+    cmp #100
+    bpl EndInputCheck
     inc JetXPos
     lda JET_HEIGHT
     sta JetAnimOffset
@@ -261,6 +272,18 @@ UpdateBomberPosition:
     jmp EndPositionUpdate
 .ResetBomberPosition
     jsr GetRandomBomberPos
+
+.SetScoreValues:
+    sed
+    lda Score
+    clc
+    adc #1
+    sta Score
+    lda Timer
+    clc
+    adc #1
+    sta Timer
+    cld
 
 EndPositionUpdate:
 
