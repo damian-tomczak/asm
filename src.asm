@@ -11,8 +11,8 @@ BomberYPos      byte
 Score           byte
 Timer           byte
 Temp            byte
-OnesDigitOffset byte
-TensDigitOffset byte
+OnesDigitOffset word
+TensDigitOffset word
 JetSpritePtr    word
 JetColorPtr     word
 BomberSpritePtr word
@@ -21,6 +21,8 @@ JetAnimOffset   byte
 Random          byte
 ScoreSprite     byte
 TimerSprite     byte
+TerrainColor    byte
+RiverColor      byte
 
     seg Code
     org $FF00
@@ -38,6 +40,10 @@ Reset:
     sta BomberYPos
     lda #%11010100
     sta Random
+    lda #4
+    sta Score
+    lda #8
+    sta Timer
 
     lda #<JetSprite
     sta JetSpritePtr
@@ -86,12 +92,17 @@ StartFrame:
     sta VBLANK
 
     lda #0
+    sta COLUBK
     sta PF0
     sta PF1
     sta PF2
     sta GRP0
     sta GRP1
+    sta CTRLPF
+
+    lda #$1E
     sta COLUPF
+
     ldx #DIGITS_HEIGHT
 
 .ScoreDigitLoop:
@@ -115,14 +126,20 @@ StartFrame:
 
     ldy OnesDigitOffset+1
     lda Digits,Y
-    and #$F0
-    sta TimerSprite
-
-    ldy OnesDigitOffset+1
-    lda Digits,Y
     and #$0F
     ora TimerSprite
     sta TimerSprite
+
+    jsr Sleep12Cycles
+    sta PF1
+    ldy ScoreSprite
+    sta WSYNC
+    sty PF1
+
+    inc TensDigitOffset
+    inc TensDigitOffset+1
+    inc OnesDigitOffset
+    inc OnesDigitOffset+1
 
     jsr Sleep12Cycles
 
@@ -130,13 +147,20 @@ StartFrame:
     sta PF1
     bne .ScoreDigitLoop
 
+    lda #0
+    sta PF0
+    sta PF1
+    sta PF2
+
+    sta WSYNC
+    sta WSYNC
     sta WSYNC
 
 GameVisibleLine:
-    lda #$84
-    sta COLUBK
-    lda #$C2
+    lda TerrainColor
     sta COLUPF
+    lda RiverColor
+    sta COLUBK
     lda #%00000001
     sta CTRLPF
     lda #$F0
@@ -146,7 +170,7 @@ GameVisibleLine:
     lda #0
     sta PF2
 
-    ldx #84
+    ldx #85
 .GameLineLoop:
 .AreWeInsideJetSprite:
     txa
@@ -243,23 +267,23 @@ EndPositionUpdate:
 CheckCollisionP0P1:
     lda #%10000000
     bit CXPPMM
-    bne .CollisionPOP1
-    jmp CheckCollisionP0PF
-.CollisionPOP1:
-    jsr GameOver
-
-CheckCollisionP0PF:
-    lda #%10000000
-    bit CXP0FB
-    bne .CollisionP0PF
+    bne .P0P1Collided
+    jsr SetTerrainRiverColor
     jmp EndCollisionCheck
-.CollisionP0PF:
+.P0P1Collided:
     jsr GameOver
 
 EndCollisionCheck:
     sta CXCLR
 
     jmp StartFrame
+
+SetTerrainRiverColor subroutine
+    lda #$C2
+    sta TerrainColor
+    lda #$84
+    sta RiverColor
+    rts
 
 SetObjectXPos subroutine
     sta WSYNC
@@ -278,7 +302,10 @@ SetObjectXPos subroutine
 
 GameOver subroutine
     lda #$30
-    sta COLUBK
+    sta TerrainColor
+    sta RiverColor
+    lda #0
+    sta Score
     rts
 
 GetRandomBomberPos subroutine
