@@ -312,10 +312,6 @@ UpdateBomberPosition:
 
 .SetScoreValues:
     sed
-    lda Score
-    clc
-    adc #1
-    sta Score
     lda Timer
     clc
     adc #1
@@ -329,9 +325,24 @@ CheckCollisionP0P1:
     bit CXPPMM
     bne .P0P1Collided
     jsr SetTerrainRiverColor
-    jmp EndCollisionCheck
+    jmp CheckCollisionM0P1
 .P0P1Collided:
     jsr GameOver
+
+CheckCollisionM0P1:
+    lda #%10000000
+    bit CXM0P
+    bne .M0P1Collided
+    jmp EndCollisionCheck
+.M0P1Collided:
+    sed
+    lda Score
+    clc
+    adc #1
+    sta Score
+    cld
+    lda #0
+    sta MissileYPos
 
 EndCollisionCheck:
     sta CXCLR
