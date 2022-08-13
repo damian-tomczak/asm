@@ -87,7 +87,7 @@ StartFrame:
     REPEND
     lda #0
     sta VSYNC
-    REPEAT 33
+    REPEAT 31
         sta WSYNC
     REPEND
 
@@ -102,6 +102,7 @@ StartFrame:
     jsr SetObjectXPos
 
     jsr CalculateDigitOffset
+    jsr GenerateJetSound
     sta WSYNC
     sta HMOVE
     lda #0
@@ -348,6 +349,22 @@ EndCollisionCheck:
     sta CXCLR
 
     jmp StartFrame
+
+GenerateJetSound subroutine
+    lda #3
+    sta AUDV0
+    lda #8
+    sta AUDC0
+    lda JetYPos
+    lsr
+    lsr
+    lsr
+    sta Temp
+    lda #31
+    sec
+    sbc Temp
+    sta AUDF0
+    rts
 
 SetTerrainRiverColor subroutine
     lda #$C2
